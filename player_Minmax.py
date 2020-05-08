@@ -1,26 +1,5 @@
-# 基于随机算法的模版AI
-# 此处采取的算法为优先在己方领域下, 己方满则在对方领域随机下
-
-# 参赛队伍的AI要求:
-#
-# 须写在Player类里
-#
-# 须实现两个方法:
-#
-# __init__(self, isFirst, array):
-#   -> 初始化
-#   -> 参数: isFirst是否先手, 为bool变量, isFirst = True 表示先手
-#   -> 参数: array随机序列, 为一个长度等于总回合数的list
-#
-# output(self, currentRound, board, mode):
-#   -> 给出己方的决策(下棋的位置或合并的方向)
-#   -> 参数: currentRound当前轮数, 为从0开始的int
-#   -> 参数: board棋盘对象
-#   -> 参数: mode模式, mode = 'position' 对应位置模式, mode = 'direction' 对应方向模式
-#   -> 返回: 位置模式返回tuple (row, column), row行, 从上到下为0到3的int; column列, 从左到右为0到7的int
-#   -> 返回: 方向模式返回direction = 0, 1, 2, 3 对应 上, 下, 左, 右
-#
-# 其余的属性与方法请自行设计
+# 基础版minmax 算法
+# 创建于2020年5月8日 by Czarja
 
 
 class Player:
@@ -28,23 +7,95 @@ class Player:
         # 初始化
         self.isFirst = isFirst
         self.array = array
+        self.maxValue = 2E9
+
+    @staticmethod
+    def cannotMove(belong, board):  # 如果某方无路可走返回True
+        for direction in [0, 1, 2, 3]:
+            if board.move(belong, direction):
+                return False
+        return True
+
+    # 不会修改board，只是针对position情况返回所有可以下棋的位置列表
+    @staticmethod
+    def getActions(currentRound, board, mode, peer):
+        if mode == 'position':
+            ownSidePos = board.getNext(peer, currentRound)
+            otherSidePos = board.getNone(not peer)
+            if len(ownSidePos) == 2:
+                otherSidePos.append(ownSidePos)
+            return otherSidePos
+        else:
+            return [0, 1, 2, 3]
+
+    def score(self, board):  # 最简单的局面估值函数
+        # 目前完全是玄学估值
+        myScoreLst = board.getScore(self.isFirst)
+        RivalScoreLst = board.getScore(not self.isFirst)
+        total = sum(myScoreLst) - sum(RivalScoreLst)/2
+        # 一个空位价值1.5分
+        total += len(board.getNone(self.isFirst))*1.5
+        # 无路可走的情况要避免
+        if Player.cannotMove(self.isFirst, board):
+            return -self.maxValue
+        elif Player.cannotMove(not self.isFirst, board):
+            return self.maxValue
+        else:
+            return total
+
+    def _minMaxRecur(self, board, depth, phase, currentRound):
+        # 返回值为局面估值
+        if depth == 0:
+            return self.score(board)
+        peer = not bool(phase % 2)
+        scores = []
+        if phase == 2 or phase == 3:
+            if phase == 3:
+                currentRound += 1
+            for d in [0, 1, 2, 3]:
+                newBoard = board.copy()
+                if newBoard.move(peer, d):
+                    curScore = self._minMaxRecur(newBoard, depth-1, (phase + 1) % 4, currentRound)
+                    scores.append(curScore)
+        else:
+            for pos in Player.getActions(currentRound, board, 'position', peer):
+                newBoard = board.copy()
+                newBoard.add(self.isFirst, pos)
+                curScore = self._minMaxRecur(newBoard, depth-1, phase + 1, currentRound)
+                scores.append(curScore)
+        if len(scores) == 0:
+            return -self.maxValue if peer == self.isFirst else +self.maxValue
+        if peer == self.isFirst:  # 执行minmax算法
+            return max(scores)
+        else:
+            return min(scores)
+
+    def minMaxDecision(self, board, currentRound, mode):  # 返回值为要进行的操作
+        actions = Player.getActions(currentRound, board, mode, self.isFirst)
+        choice = None
+        finalScore = -self.maxValue
+        depth = 2
+        if mode == 'direction':
+            phase = 2 if self.isFirst else 3
+            if not self.isFirst:
+                currentRound += 1
+            for d in actions:
+                newBoard = board.copy()
+                if newBoard.move(self.isFirst, d):
+                    curScore = self._minMaxRecur(newBoard, depth, (phase+1) % 4, currentRound)
+                    if curScore >= finalScore:  # 所有情况搞一个列表，选出分值最高的
+                        finalScore = curScore
+                        choice = d
+        else:
+            phase = 0 if self.isFirst else 1
+            for pos in actions:
+                newBoard = board.copy()
+                newBoard.add(self.isFirst, pos)
+                curScore = self._minMaxRecur(newBoard, depth, phase+1, currentRound)
+                if curScore >= finalScore:
+                    finalScore = curScore
+                    choice = pos
+        return choice
 
     def output(self, currentRound, board, mode):
-        board = board.copy()
-        if mode == 'position':  # 给出己方下棋的位置
-            another = board.getNext(self.isFirst, currentRound)  # 己方的允许落子点
-            if another != None: return another
-
-            available = board.getNone(not self.isFirst)  # 对方的允许落子点
-            if not available:   # 整个棋盘已满
-                return None
-            else:
-                from random import choice
-                return choice(available)
-        else:  # 给出己方合并的方向
-            from random import shuffle
-            directionList = [0, 1, 2, 3]
-            shuffle(directionList)
-            for direction in directionList:
-                if board.move(self.isFirst, direction): return direction
-            return 0
+        return self.minMaxDecision(board, currentRound, mode)
