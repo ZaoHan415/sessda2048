@@ -9,4 +9,9 @@
 ## 目前状态
 
 - Random player拷自技术组
-- Minmax算法还没开工
+- Stupid player拷自玩家
+- 基础的Minmax算法已经实现了
+
+### 20.5.8
+
+- 增加了Minmax算法，Stable和Preview两个版本

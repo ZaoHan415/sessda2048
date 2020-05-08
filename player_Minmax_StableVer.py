@@ -28,6 +28,13 @@ class Player:
         else:
             return [0, 1, 2, 3]
 
+    @staticmethod
+    def weightSum(lst):
+        total = 0
+        for a in lst:
+            total += a*a
+        return total
+
     def score(self, board):  # 最简单的局面估值函数
         # 目前完全是玄学估值
         myScoreLst = board.getScore(self.isFirst)
