@@ -28,7 +28,7 @@ class ABNode:
 
     def expandAll(self):
         '''
-        根据此时的 aall_actions生成所有可能的子节点
+        根据此时的 all_actions生成所有可能的子节点
         对死棋进行特殊处理
         '''
         a_board = self.board.copy()
