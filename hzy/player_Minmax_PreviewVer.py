@@ -40,7 +40,7 @@ class Player:
         # 目前完全是玄学估值
         myScoreLst = board.getScore(self.isFirst)
         RivalScoreLst = board.getScore(not self.isFirst)
-        total = sum(myScoreLst) - sum(RivalScoreLst)/2
+        total = sum(myScoreLst) - Player.weightSum(RivalScoreLst)/2
         # 一个空位价值1.5分
         total += len(board.getNone(self.isFirst))*1.5
         # 无路可走的情况要避免
@@ -60,6 +60,10 @@ class Player:
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
+            # if currentRound > 150:
+            #     if inc < 4:
+            #         depth += 1
+            #         inc += 1
             for d in [0, 1, 2, 3]:
                 newBoard = board.copy()
                 if newBoard.move(peer, d):
@@ -75,10 +79,10 @@ class Player:
         else:
             posLst = Player.getActions(currentRound, board, 'position', peer)
             posLstLen = len(posLst)
-            if posLstLen > 8:
+            if posLstLen > 10:
                 depth -= 1
-            elif inc < 4:
-                if posLstLen < 4:
+            elif posLstLen < 4:
+                if inc < 3:
                     depth += 1
                     inc += 1
             for pos in posLst:
@@ -101,12 +105,13 @@ class Player:
         finalScore = -self.maxValue
         depth = 2
         if mode == 'direction':
+            # phase 0 1 2 3
             phase = 2 if self.isFirst else 3
             if not self.isFirst:
                 currentRound += 1
-            if currentRound < 20:
+            if currentRound < 10:
                 depth = 0
-            elif currentRound < 40:
+            elif currentRound < 60:
                 depth = 1
             for d in actions:
                 newBoard = board.copy()
