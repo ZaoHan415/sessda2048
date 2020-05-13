@@ -105,6 +105,7 @@ class Player:
         finalScore = -self.maxValue
         depth = 2
         if mode == 'direction':
+            # phase 0 1 2 3
             phase = 2 if self.isFirst else 3
             if not self.isFirst:
                 currentRound += 1
