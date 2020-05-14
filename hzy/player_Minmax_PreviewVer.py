@@ -87,7 +87,7 @@ class Player:
                     inc += 1
             for pos in posLst:
                 newBoard = board.copy()
-                newBoard.add(self.isFirst, pos)
+                newBoard.add(peer, pos)
                 curScore = self._minMaxRecur(newBoard, depth-1, phase + 1, currentRound, inc, alpha, beta)
                 if not flag and (curScore < beta):
                     beta = curScore
