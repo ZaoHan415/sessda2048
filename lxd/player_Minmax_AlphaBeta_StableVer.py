@@ -87,6 +87,8 @@ class Player:
         choice = None
         finalScore = -self.maxValue
         depth = 2
+        if mode[0] == '_':
+            return None
         if mode == 'direction':
             phase = 2 if self.isFirst else 3
             if not self.isFirst:
