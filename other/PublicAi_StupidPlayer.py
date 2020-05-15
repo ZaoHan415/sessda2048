@@ -166,7 +166,7 @@ class ABNode:
         从当前节点开始AlphaBeta剪枝生长，返回决策操作
         '''
         if self.currentRound >= 500:
-            self.parent.grow(height - 1)
+            self.parent.grow(height - 1, max_height)
         else:
             if height < max_height:
                 if not self.children:
@@ -174,21 +174,17 @@ class ABNode:
 
                 while self.all_actions:
                     if self.alpha < self.beta:
-                        self.expand().grow(height + 1)
+                        self.expand().grow(height + 1, max_height)
                     else:
                         self.all_actions = []
 
-                if height == 0:
-                    return self.select()[0]
-                else:
-                    self.select()
+                return self.select()[0]
 
                 if self.type:
                     self.parent.beta = min(self.alpha, self.parent.beta)
                 else:
                     self.parent.alpha = max(self.beta, self.parent.alpha)
 
-                self.parent.grow(height - 1)
 
             elif height == max_height:
                 # self.getAllActions()
@@ -206,7 +202,7 @@ class ABNode:
                 if self.type:
                     self.parent.beta = min(self.situation, self.parent.beta)
                 else:
-                    self.parent.alpha = max(self.situation, self.parent.beta)
+                    self.parent.alpha = max(self.situation, self.parent.alpha)
 
 
     def judge(self):
@@ -244,22 +240,23 @@ class ABNode:
         '''
         if self.mode == "position":
             myPosition = self.board.getNext(self.isFirst, self.currentRound)
-            positionList = [myPosition] if myPosition else []
-            positionList.extend(self.board.getNone(not self.isFirst))
-            random.shuffle(positionList)
+            position_list = [myPosition] if myPosition else []
+            position_list.extend(self.board.getNone(not self.isFirst))
+            random.shuffle(position_list)
             # 死棋异常处理
-            self.all_actions = positionList if positionList else [None]
-            return positionList
+            self.all_actions = position_list if position_list else [None]
+            return position_list
         elif self.mode == "direction":
-            directionList = []
-            for i in range(4):
+            direction_list = []
+            choose_list = [2, 0, 1, 3] if self.isFirst else [3, 0, 1, 2]
+            for i in choose_list:
                 a_board = self.board.copy()
                 if a_board.move(self.isFirst, i):
-                    directionList.append(i)
-            random.shuffle(directionList)
+                    direction_list.append(i)
+            random.shuffle(direction_list)
             # 死棋异常处理
-            self.all_actions = directionList if directionList else [None]
-            return directionList
+            self.all_actions = direction_list if direction_list else [None]
+            return direction_list
         else:
             raise AssertionError(f"no such mode: {self.mode}")
 
@@ -269,14 +266,53 @@ class ABMCTS:
         初始化生成根节点
         '''
         self.root = ABNode(board=board,
-                         currentRound=currentRound,
-                         mode=mode,
-                         isFirst=isFirst,
-                         parent=None,
-                         type=True)
+                           currentRound=currentRound,
+                           mode=mode,
+                           isFirst=isFirst,
+                           parent=None,
+                           type=True)
 
     def output(self):
-        return self.root.grow()
+        switch = random.random()
+        self.root.getAllActions()
+        if len(self.root.all_actions) >= 8:
+            return self.root.grow(max_height=2)
+        else:
+            if switch < 0.9:
+                return self.root.grow(max_height=2)
+            else:
+                return self.root.grow(max_height=4)
+
+class Stupid:
+    def __init__(self, currentRound, board, mode, isFirst):
+        self.currentRound = currentRound
+        self.board = board
+        self.mode = mode
+        self.isFirst = isFirst
+
+    def output(self):
+        if self.currentRound <= 30:
+            if self.mode == 'direction':
+                direction_list = [2, 0, 1, 3] if self.isFirst else [3, 0, 1, 2]
+                for action in direction_list:
+                    if self.board.move(self.isFirst, action):
+                        return action
+            else:
+                if self.board.getNext(self.isFirst, self.currentRound):
+                    return self.board.getNext(self.isFirst, self.currentRound)
+                else:
+                    return self.board.getNone(not self.isFirst).pop()
+        else:
+            if self.mode == 'direction':
+                direction_list = [3, 0, 1, 2] if self.isFirst else [2, 0, 1, 3]
+                for action in direction_list:
+                    if self.board.move(self.isFirst, action):
+                        return action
+            else:
+                if self.board.getNext(self.isFirst, self.currentRound):
+                    return self.board.getNext(self.isFirst, self.currentRound)
+                else:
+                    return self.board.getNone(not self.isFirst).pop()
 
 class Player:
     def __init__(self, isFirst, array):
@@ -284,7 +320,13 @@ class Player:
         self.array = array
 
     def output(self, currentRound, board, mode):
-        # print(currentRound)
-        MCTS = ABMCTS(currentRound, board, mode, self.isFirst)
-        action = MCTS.output()
-        return action
+        if mode[0] == '_':
+            return
+        else:
+            if currentRound <= 30:
+                Simple = Stupid(currentRound, board, mode, self.isFirst)
+                return Simple.output()
+            else:
+                MCTS = ABMCTS(currentRound, board, mode, self.isFirst)
+                action = MCTS.output()
+                return action
