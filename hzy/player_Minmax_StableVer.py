@@ -33,7 +33,7 @@ class Player:
     def weightSum(lst):  # 平方和作为总分
         total = 0
         for a in lst:
-            total += a*a
+            total += a**2
         return total
 
     def score(self, board):  # 最简单的局面估值函数
@@ -111,7 +111,7 @@ class Player:
             phase = 2 if self.isFirst else 3
             if not self.isFirst:
                 currentRound += 1
-            if currentRound < 10:
+            if currentRound < 20:
                 depth = 0
             elif currentRound < 60:
                 depth = 1

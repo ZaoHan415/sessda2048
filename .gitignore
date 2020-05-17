@@ -133,3 +133,5 @@ dmypy.json
 2020-*/
 src/
 .DS_Store
+main.py
+variables.py
