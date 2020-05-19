@@ -132,3 +132,6 @@ dmypy.json
 
 2020-*/
 src/
+main.py
+variables.py
+variables.py
