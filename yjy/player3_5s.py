@@ -11,8 +11,8 @@ class Player:
         self.array = array
         self.maxValue = 2E9
         # self.weight = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
-        self.weight = [1, 2, 4, 8, 16, 32, 64, 128, 259, 519, 1039, 2079, 4159]
-        # self.weight = [3**i for i in range(13)]
+        # self.weight = [1, 2, 4, 8, 16, 32, 64, 128, 259, 519, 1039, 2079, 4159]
+        self.weight = [4**i for i in range(13)]
         # self.weight = [1, 2, 5, 11, 23, 47, 95, 191, 383, 767, 1535, 3071, 6143]
         # self.weight = [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191]
         self.maxRounds = len(array)
@@ -45,13 +45,15 @@ class Player:
         myScoreLst = board.getScore(self.isFirst)
         RivalScoreLst = board.getScore(not self.isFirst)
         total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst)
+        # total += self.weight[myScoreLst[-1]]*4
+        # total -= self.weight[RivalScoreLst[-1]]*4
         # 一个空位价值1.5分
         total += len(board.getNone(self.isFirst))*1.5
         # 无路可走的情况要避免
         # if Player.cannotMove(self.isFirst, board):
-        #     return -self.maxValue
+            # return -self.maxValue
         # elif Player.cannotMove(not self.isFirst, board):
-        #     return self.maxValue
+            # return self.maxValue
         # else:
         return total
 
@@ -63,10 +65,16 @@ class Player:
         flag = bool(peer == self.isFirst)
         # flag = peer
         # flag = True时为自己回合，peer = True的时候为先手方回合
-        if currentRound > self.maxRounds * 0.8:  # 更新了，0.6待调整
+        if currentRound > self.maxRounds * 0.7:  # 更新了，0.6待调整
             tLeft = board.getTime(self.isFirst)
             if (self.totalTime - tLeft) * self.maxRounds / currentRound > self.totalTime:
                 depth -= 1
+                if currentRound > self.maxRounds * 0.9:
+                    depth -= 1
+                    if currentRound > self.maxRounds * 0.95:
+                        depth -= 1
+                        if currentRound >= self.maxRounds - 10:
+                            depth = -5
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
@@ -127,10 +135,16 @@ class Player:
         flag = bool(peer == self.isFirst)
         # flag != peer
         # flag = True时为自己回合，peer = True的时候为先手方回合
-        if currentRound > self.maxRounds * 0.8:  # 更新了，0.6待调整
+        if currentRound > self.maxRounds * 0.7:  # 更新了，0.6待调整
             tLeft = board.getTime(self.isFirst)
             if (self.totalTime - tLeft) * self.maxRounds / currentRound > self.totalTime:
                 depth -= 1
+                if currentRound > self.maxRounds * 0.9:
+                    depth -= 1
+                    if currentRound > self.maxRounds * 0.95:
+                        depth -= 1
+                        if currentRound >= self.maxRounds - 10:
+                            depth = -5
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
@@ -192,11 +206,11 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3
             phase = 2
-            depth = 5
+            depth = 6
             for d in actions:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
-                    curScore = self._minMaxRecurF(newBoard, depth, (phase+1) % 4, currentRound, 0)
+                    curScore = self._minMaxRecurF(newBoard, depth, (phase+1) % 4, currentRound, 1)
                     if curScore >= finalScore:  # 所有情况搞一个列表，选出分值最高的
                         finalScore = curScore
                         choice = d
@@ -206,7 +220,7 @@ class Player:
             # if len(actions) > 5:
                 return actions[0]
             else:
-                depth = 5
+                depth = 4
                 for pos in actions:
                     newBoard = board.copy()
                     newBoard.add(self.isFirst, pos)
@@ -225,11 +239,11 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3
             phase = 3
-            depth = 5
+            depth = 6
             for d in actions:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
-                    curScore = self._minMaxRecurNF(newBoard, depth, (phase + 1) % 4, currentRound + 1, 0)
+                    curScore = self._minMaxRecurNF(newBoard, depth, (phase + 1) % 4, currentRound + 1, 1)
                     if curScore >= finalScore:  # 所有情况搞一个列表，选出分值最高的
                         finalScore = curScore
                         choice = d
@@ -239,7 +253,7 @@ class Player:
             # if len(actions) > 5:
                 return actions[0]
             else:
-                depth = 5
+                depth = 4
                 for pos in actions:
                     newBoard = board.copy()
                     newBoard.add(self.isFirst, pos)
