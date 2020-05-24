@@ -102,7 +102,7 @@ class Player:
                             return beta
             else:
                 newBoard = board.copy()
-                newBoard.add(peer, posLst[-1])
+                newBoard.add(peer, posLst[0])
                 curScore = self._minMaxRecurF(newBoard, depth-1, phase + 1, currentRound, inc, alpha, beta)
                 return curScore
         return alpha if flag else beta
@@ -155,7 +155,7 @@ class Player:
                             return beta
             else:
                 newBoard = board.copy()
-                newBoard.add(peer, posLst[-1])
+                newBoard.add(peer, posLst[0])
                 curScore = self._minMaxRecurNF(newBoard, depth-1, phase + 1, currentRound, inc, alpha, beta)
                 return curScore
         return alpha if flag else beta
@@ -180,7 +180,7 @@ class Player:
         else:
             phase = 0
             if len(actions) > 5 and board.getNext(self.isFirst, currentRound):  # 待调整
-                return board.getNext(self.isFirst, currentRound)
+                return actions[0]
             else:
                 depth = 3
                 for pos in actions:
@@ -212,7 +212,7 @@ class Player:
         else:
             phase = 1
             if len(actions) > 10 and board.getNext(self.isFirst, currentRound):  # 待调整
-                return board.getNext(self.isFirst, currentRound)
+                return actions[0]
             else:
                 depth = 2
                 for pos in actions:
