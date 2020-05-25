@@ -1,6 +1,7 @@
 # 基础版minmax 算法
 # 创建于2020年5月8日 by Czarja
 # 添加αβ剪枝，2020 5 09 by DXLi
+#基于最新版本的先手方
 
 
 class Player:
@@ -38,15 +39,15 @@ class Player:
 
     def score(self, board):  # 最简单的局面估值函数
         # 目前完全是玄学估值
-        myScoreLst = board.getScore(self.isFirst)
-        RivalScoreLst = board.getScore(not self.isFirst)
+        myScoreLst = board.getScore(True) #己方固定先手
+        RivalScoreLst = board.getScore(False) #敌方固定后手
         total = sum(myScoreLst) - Player.weightSum(RivalScoreLst)/2
         # 一个空位价值1.5分
-        total += len(board.getNone(self.isFirst))*1.5
+        total += len(board.getNone(True))*1.5
         # 无路可走的情况要避免
-        if Player.cannotMove(self.isFirst, board):
+        if Player.cannotMove(True, board): #避免己方无路可走
             return -self.maxValue
-        elif Player.cannotMove(not self.isFirst, board):
+        elif Player.cannotMove(False, board): #促使敌方无路可走
             return self.maxValue
         else:
             return total
@@ -55,8 +56,7 @@ class Player:
         # 返回值为局面估值
         if depth <= 0:
             return self.score(board)
-        peer = not bool(phase % 2)
-        flag = bool(peer == self.isFirst)
+        peer = not bool(phase % 2) #peer为真代表己方
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
@@ -68,11 +68,11 @@ class Player:
                 newBoard = board.copy()
                 if newBoard.move(peer, d):
                     curScore = self._minMaxRecur(newBoard, depth-1, (phase + 1) % 4, currentRound, inc, alpha, beta)
-                    if not flag and (curScore < beta):
+                    if not peer and (curScore < beta):
                         beta = curScore
                         if alpha >= beta:
                             return alpha
-                    if flag and (curScore > alpha):
+                    if peer and (curScore > alpha):
                         alpha = curScore
                         if alpha >= beta:
                             return beta
@@ -87,13 +87,13 @@ class Player:
                     inc += 1
             for pos in posLst:
                 newBoard = board.copy()
-                newBoard.add(self.isFirst, pos)
+                newBoard.add(True, pos) #????
                 curScore = self._minMaxRecur(newBoard, depth-1, phase + 1, currentRound, inc, alpha, beta)
-                if not flag and (curScore < beta):
+                if not peer and (curScore < beta):
                     beta = curScore
                     if alpha >= beta:
                         return alpha
-                if flag and (curScore > alpha):
+                if peer and (curScore > alpha):
                     alpha = curScore
                     if alpha >= beta:
                         return beta
@@ -104,32 +104,32 @@ class Player:
         choice = None
         finalScore = -self.maxValue
         depth = 2
+        if mode[0] == '_':
+            return None
         if mode == 'direction':
             # phase 0 1 2 3
-            phase = 2 if self.isFirst else 3
-            if not self.isFirst:
-                currentRound += 1
+            phase = 2 #己方固定先手
             if currentRound < 10:
                 depth = 0
             elif currentRound < 60:
                 depth = 1
             for d in actions:
                 newBoard = board.copy()
-                if newBoard.move(self.isFirst, d):
-                    curScore = self._minMaxRecur(newBoard, depth, (phase+1) % 4, currentRound, 0)
+                if newBoard.move(True, d):
+                    curScore = self._minMaxRecur(newBoard, depth, 3, currentRound, 0)
                     if curScore >= finalScore:  # 所有情况搞一个列表，选出分值最高的
                         finalScore = curScore
                         choice = d
         else:
-            phase = 0 if self.isFirst else 1
+            phase = 0 #己方固定先手
             if len(actions) > 12:
                 depth = 0
             elif len(actions) > 8:
                 depth = 1
             for pos in actions:
                 newBoard = board.copy()
-                newBoard.add(self.isFirst, pos)
-                curScore = self._minMaxRecur(newBoard, depth, phase+1, currentRound, 0)
+                newBoard.add(True, pos)
+                curScore = self._minMaxRecur(newBoard, depth, 1, currentRound, 0)
                 if curScore >= finalScore:
                     finalScore = curScore
                     choice = pos
