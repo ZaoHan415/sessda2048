@@ -5,7 +5,8 @@ import round_match as rm
 import time
 
 
-player1 = r'./player_Minmax_PreviewVer.py'
+# player1 = r'./hzy/working.py'
+player1 = r'./hzy/player_Minmax_PreviewVer.py'
 # player2 = r'./player_Random.py'
 player2 = r'./player_Minmax_AlphaBeta_PreviewVer.py'
 # -----------

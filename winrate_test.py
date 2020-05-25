@@ -1,7 +1,7 @@
 # 基础版minmax 算法
 # 创建于2020年5月8日 by Czarja
 
-
+P=[]
 class Player:
     def __init__(self, isFirst, array):
         # 初始化
@@ -41,14 +41,16 @@ class Player:
         RivalScoreLst = board.getScore(not self.isFirst)
         total = sum(myScoreLst) - sum(RivalScoreLst)/2
         # 一个空位价值1.5分
-        total += len(board.getNone(self.isFirst))*1.5
+        total -= P[len(board.getNone(self.isFirst))]
         # 无路可走的情况要避免
+        '''
         if Player.cannotMove(self.isFirst, board):
             return -self.maxValue
         elif Player.cannotMove(not self.isFirst, board):
             return self.maxValue
         else:
-            return total
+        '''
+        return total
 
     def _minMaxRecur(self, board, depth, phase, currentRound):
         # 返回值为局面估值
