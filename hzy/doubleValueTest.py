@@ -18,7 +18,7 @@ class Player:
         # self.weight = [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191]
         self.maxRounds = len(array)
         self.totalTime = 5.0
-        self.threshold = self.maxRounds * 0.2  # 开启时间控制的阈值
+        self.threshold = self.maxRounds * 0.15  # 开启时间控制的阈值
 
     @staticmethod
     def cannotMove(belong, board):  # 如果某方无路可走返回True
@@ -40,21 +40,21 @@ class Player:
             return [0, 1, 2, 3]
 
     def getDepth(self, currentRound, board):  # 动态调深度不太好，现在在搜索开始前把深度定死
-        depth = 9
+        depth = 8
         if currentRound > self.threshold:  # 更新了，0.6待调整
             tLeft = board.getTime(self.isFirst)
             tEsti = (self.totalTime - tLeft) / float(currentRound)
-            if tEsti > 0.011:
+            if tEsti > 0.0105:
                 depth -= 2
-            elif tEsti > 0.0099:
+            elif tEsti > 0.0095:
                 depth -= 1
-            elif tEsti < 0.002:
-                depth += 6
-            elif tEsti < 0.003:
-                depth += 5
             elif tEsti < 0.005:
-                depth += 4
+                depth += 6
+            elif tEsti < 0.006:
+                depth += 5
             elif tEsti < 0.007:
+                depth += 4
+            elif tEsti < 0.009:
                 depth += 3
         return depth
 
@@ -112,7 +112,7 @@ class Player:
         else:
             posLst = Player.getActions(currentRound, board, 'position', peer)
             posLstLen = len(posLst)
-            if posLstLen <= 4:
+            if posLstLen < 5:
                 # if inc < 4:
                 #     depth += 1
                 #     inc += 1
