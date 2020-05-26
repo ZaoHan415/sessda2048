@@ -17,7 +17,8 @@ class Player:
         # self.weight = [2**i for i in range(13)]
         # self.weight = [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191]
         self.maxRounds = len(array)
-        self.totalTime = 5
+        self.totalTime = 5.0
+        self.threshold = self.maxRounds * 0.2  # 开启时间控制的阈值
 
     @staticmethod
     def cannotMove(belong, board):  # 如果某方无路可走返回True
@@ -38,12 +39,25 @@ class Player:
         else:
             return [0, 1, 2, 3]
 
-    @staticmethod
-    def getDepth(currentRound):
+    def getDepth(self, currentRound, board):  # 动态调深度不太好，现在在搜索开始前把深度定死
         if currentRound < 200:
-            return 6
+            depth = 8
         else:
-            return 8
+            depth = 6
+        if currentRound > self.threshold:  # 更新了，0.6待调整
+            tLeft = board.getTime(self.isFirst)
+            tEsti = (self.totalTime - tLeft) / float(currentRound)
+            if tEsti > 0.012:
+                depth -= 1
+            elif tEsti < 0.001:
+                depth += 6
+            elif tEsti < 0.003:
+                depth += 5
+            elif tEsti < 0.005:
+                depth += 4
+            elif tEsti < 0.007:
+                depth += 3
+        return depth
 
     def weightSum(self, lst):  # 平方和作为总分
         return sum(map(self.weight.__getitem__, lst))
@@ -81,10 +95,6 @@ class Player:
         flag = bool(peer == self.isFirst)
         # flag = peer
         # flag = True时为自己回合，peer = True的时候为先手方回合
-        if currentRound > self.maxRounds * 0.7:  # 更新了，0.6待调整
-            tLeft = board.getTime(self.isFirst)
-            if (self.totalTime - tLeft) * self.maxRounds / currentRound > self.totalTime:
-                depth -= 1
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
@@ -104,9 +114,9 @@ class Player:
             posLst = Player.getActions(currentRound, board, 'position', peer)
             posLstLen = len(posLst)
             if posLstLen <= 3:
-                if inc < 4:
-                    depth += 1
-                    inc += 1
+                # if inc < 4:
+                #     depth += 1
+                #     inc += 1
                 for pos in posLst:
                     newBoard = board.copy()
                     newBoard.add(peer, pos)
@@ -135,7 +145,7 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3
             phase = 2
-            depth = Player.getDepth(currentRound)
+            depth = self.getDepth(currentRound, board)
             for d in actions:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
@@ -148,7 +158,7 @@ class Player:
             if len(actions) > 5 and board.getNext(self.isFirst, currentRound):  # 待调整
                 return board.getNext(self.isFirst, currentRound)
             else:
-                depth = Player.getDepth(currentRound)
+                depth = self.getDepth(currentRound, board)
                 for pos in actions:
                     newBoard = board.copy()
                     newBoard.add(self.isFirst, pos)
@@ -167,7 +177,7 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3
             phase = 3
-            depth = Player.getDepth(currentRound)
+            depth = self.getDepth(currentRound, board)
             for d in actions:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
@@ -180,7 +190,7 @@ class Player:
             if len(actions) > 5 and board.getNext(self.isFirst, currentRound):  # 待调整
                 return board.getNext(self.isFirst, currentRound)
             else:
-                depth = Player.getDepth(currentRound)
+                depth = self.getDepth(currentRound, board)
                 for pos in actions:
                     newBoard = board.copy()
                     newBoard.add(self.isFirst, pos)
