@@ -40,16 +40,15 @@ class Player:
             return [0, 1, 2, 3]
 
     def getDepth(self, currentRound, board):  # 动态调深度不太好，现在在搜索开始前把深度定死
-        if currentRound < 200:
-            depth = 8
-        else:
-            depth = 6
+        depth = 9
         if currentRound > self.threshold:  # 更新了，0.6待调整
             tLeft = board.getTime(self.isFirst)
             tEsti = (self.totalTime - tLeft) / float(currentRound)
-            if tEsti > 0.012:
+            if tEsti > 0.011:
+                depth -= 2
+            elif tEsti > 0.0099:
                 depth -= 1
-            elif tEsti < 0.001:
+            elif tEsti < 0.002:
                 depth += 6
             elif tEsti < 0.003:
                 depth += 5
@@ -113,7 +112,7 @@ class Player:
         else:
             posLst = Player.getActions(currentRound, board, 'position', peer)
             posLstLen = len(posLst)
-            if posLstLen <= 3:
+            if posLstLen <= 4:
                 # if inc < 4:
                 #     depth += 1
                 #     inc += 1
