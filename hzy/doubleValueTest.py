@@ -41,9 +41,9 @@ class Player:
     @staticmethod
     def getDepth(currentRound):
         if currentRound < 200:
-            return 5
+            return 6
         else:
-            return 7
+            return 8
 
     def weightSum(self, lst):  # 平方和作为总分
         return sum(map(self.weight.__getitem__, lst))
