@@ -60,12 +60,12 @@ class Player:
             '''for item in lst1:
                 if board.getBelong(item):
                     total-=self.weight[board.getValue(item)]/2   '''
-        '''
+        
         # 修改了空位函数，使得剩的格子越少空位越值钱，根据己方所剩棋子的最大值计算空位值
         k1=len(board.getNone(self.isFirst))
         if k1<=9:
             total-=2**(9-k1)
-        '''
+        
         #total += len(board.getNone(self.isFirst))*1.5
         # 无路可走的情况要避免
         # if Player.cannotMove(self.isFirst, board):
