@@ -44,7 +44,7 @@ class Player:
         if currentRound > self.threshold:  # 更新了，0.6待调整
             tLeft = board.getTime(self.isFirst)
             tEsti = (self.totalTime - tLeft) / float(currentRound)
-            if tEsti > 0.0105:
+            if tEsti > 0.0100:
                 depth -= 2
             elif tEsti > 0.0095:
                 depth -= 1
@@ -61,11 +61,15 @@ class Player:
     def weightSum(self, lst):  # 平方和作为总分
         return sum(map(self.weight.__getitem__, lst))
 
-    def score(self, board):  # 最简单的局面估值函数
+    def score(self, board, currentRound):  # 最简单的局面估值函数
         # 目前完全是玄学估值
         myScoreLst = board.getScore(self.isFirst)
+        if board.getNext(self.isFirst, currentRound) is None:
+            total = -self.weight[myScoreLst[-1]]/3  # 无空可走的负分是动态的
+        else:
+            total = 0
         RivalScoreLst = board.getScore(not self.isFirst)
-        total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst)
+        total += self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst)
         # 一个空位价值1.5分
         # total += len(board.getNone(self.isFirst))*1.5
         # 无路可走的情况要避免
@@ -76,7 +80,7 @@ class Player:
         # else:
         return total
 
-    def scoreMove(self, board):
+    def scoreMove(self, board, currentRound):
         myScoreLst = board.getScore(self.isFirst)
         RivalScoreLst = board.getScore(not self.isFirst)
         total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst)
@@ -87,9 +91,9 @@ class Player:
         # 返回值为局面估值
         if depth <= 0 or currentRound >= self.maxRounds:
             if phase == 1 or phase == 2:
-                return self.score(board)
+                return self.score(board, currentRound)
             elif phase == 3 or phase == 0:
-                return self.scoreMove(board)
+                return self.scoreMove(board, currentRound)
         peer = not bool(phase % 2)
         flag = bool(peer == self.isFirst)
         # flag = peer
@@ -154,7 +158,7 @@ class Player:
                         choice = d
         else:
             phase = 0
-            if len(actions) > 5 and board.getNext(self.isFirst, currentRound):  # 待调整
+            if len(actions) > 6 and board.getNext(self.isFirst, currentRound):  # 待调整
                 return board.getNext(self.isFirst, currentRound)
             else:
                 depth = self.getDepth(currentRound, board)
@@ -186,7 +190,7 @@ class Player:
                         choice = d
         else:
             phase = 1
-            if len(actions) > 5 and board.getNext(self.isFirst, currentRound):  # 待调整
+            if len(actions) > 6 and board.getNext(self.isFirst, currentRound):  # 待调整
                 return board.getNext(self.isFirst, currentRound)
             else:
                 depth = self.getDepth(currentRound, board)
