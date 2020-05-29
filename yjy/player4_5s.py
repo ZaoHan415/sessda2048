@@ -10,8 +10,9 @@ class Player:
         self.isFirst = isFirst
         self.array = array
         self.maxValue = 2E9
-        self.weight = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 259.0, 519.0, 1039.0, 2079.0, 4159.0]  # t
-        self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
+        # self.weight = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 259.0, 519.0, 1039.0, 2079.0, 4159.0]  # t
+        # self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
+        self.weight = [2.0 ** (n+1) - 1 for n in range(13)]
         self.maxRounds = len(array)
         self.totalTime = 5.0
         self.threshold = self.maxRounds * 0.15  # 开启时间控制的阈值
@@ -32,10 +33,12 @@ class Player:
         if currentRound > self.threshold:  # 阈值待调整
             tLeft = board.getTime(self.isFirst)
             tEsti = float(self.totalTime - tLeft) / float(currentRound)
-            if tEsti > 0.0100:
-                depth -= 2
+            if tEsti > 0.0105:
+                depth -= 4
+            elif tEsti > 0.010:
+                depth -= 3
             elif tEsti > 0.0095:
-                depth -= 1
+                depth -= 2
             elif tEsti < 0.005:
                 depth += 6
             elif tEsti < 0.006:
