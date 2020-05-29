@@ -11,6 +11,7 @@ class Player:
         self.array = array
         self.maxValue = 2E9
         self.weight = [1, 2, 4, 8, 16, 32, 64, 128, 259, 519, 1039, 2079, 4159]
+        # self.marginWeight = [2E9, 8, 4, 0, 0, 0, 0]+[0]*25
         self.maxRounds = len(array)
         self.totalTime = 5.0
         self.threshold = self.maxRounds * 0.15  # 开启时间控制的阈值
@@ -51,6 +52,7 @@ class Player:
     def score(self, board, currentRound):  # 最简单的局面估值函数
         # 目前完全是玄学估值
         myScoreLst = board.getScore(self.isFirst)
+        # total = self.marginWeight[len(board.getNone(not self.isFirst))] - self.marginWeight[len(board.getNone(self.isFirst))]
         if board.getNext(self.isFirst, currentRound) is None:
             total = -self.weight[myScoreLst[-1]]/3  # 无空可走的情况酌情扣分
         else:
