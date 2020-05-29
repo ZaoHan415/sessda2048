@@ -81,7 +81,7 @@ class Player:
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
-            for d in [0, 1, 2, 3]:
+            for d in [0, 1, 2, 3]:  # 可以改顺序 方便剪枝
                 newBoard = board.copy()
                 if newBoard.move(peer, d):
                     curScore = self._minMaxRecur(newBoard, depth - 1, (phase + 1) % 4, currentRound, alpha, beta)
