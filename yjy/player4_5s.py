@@ -10,8 +10,8 @@ class Player:
         self.isFirst = isFirst
         self.array = array
         self.maxValue = 2E9
-        self.weight = [1, 2, 4, 8, 16, 32, 64, 128, 259, 519, 1039, 2079, 4159]
-        # self.marginWeight = [2E9, 8, 4, 0, 0, 0, 0]+[0]*25
+        self.weight = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 259.0, 519.0, 1039.0, 2079.0, 4159.0]  # t
+        self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
         self.maxRounds = len(array)
         self.totalTime = 5.0
         self.threshold = self.maxRounds * 0.15  # 开启时间控制的阈值
@@ -31,7 +31,7 @@ class Player:
         depth = 8
         if currentRound > self.threshold:  # 阈值待调整
             tLeft = board.getTime(self.isFirst)
-            tEsti = (self.totalTime - tLeft) / float(currentRound)
+            tEsti = float(self.totalTime - tLeft) / float(currentRound)
             if tEsti > 0.0100:
                 depth -= 2
             elif tEsti > 0.0095:
@@ -44,7 +44,7 @@ class Player:
                 depth += 4
             elif tEsti < 0.009:
                 depth += 3
-        return depth
+        return depth  # 不超时地最接近5s
 
     def weightSum(self, lst):  # 棋子和作为总分
         return sum(map(self.weight.__getitem__, lst))
@@ -52,9 +52,9 @@ class Player:
     def score(self, board, currentRound):  # 最简单的局面估值函数
         # 目前完全是玄学估值
         myScoreLst = board.getScore(self.isFirst)
-        # total = self.marginWeight[len(board.getNone(not self.isFirst))] - self.marginWeight[len(board.getNone(self.isFirst))]
+        total = self.marginWeight[len(board.getNone(not self.isFirst))] - self.marginWeight[len(board.getNone(self.isFirst))]
         if board.getNext(self.isFirst, currentRound) is None:
-            total = -self.weight[myScoreLst[-1]]/3  # 无空可走的情况酌情扣分
+            total = -self.weight[myScoreLst[-1]] / 3.0  # 无空可走的情况酌情扣分
         else:
             total = 0
         RivalScoreLst = board.getScore(not self.isFirst)
@@ -64,9 +64,9 @@ class Player:
     def scoreMove(self, board):
         myScoreLst = board.getScore(self.isFirst)
         RivalScoreLst = board.getScore(not self.isFirst)
-        total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst)
+        total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst) * 32.0  # 更有进攻性
         # move的情况空格有额外两分
-        total += (len(board.getNone(self.isFirst)) - len(board.getNone(not self.isFirst))) * 2
+        total += (len(board.getNone(self.isFirst)) - len(board.getNone(not self.isFirst))) * 2.0  # t
         return total
 
     def _minMaxRecur(self, board, depth, phase, currentRound, alpha=-(2E9), beta=+(2E9)):
@@ -97,7 +97,7 @@ class Player:
             nextMove, posLst = Player.getActions(currentRound, board, peer)
             if nextMove is not None:
                 posLst.insert(0, nextMove)  # 插在最前面，方便alphabeta剪枝
-            if len(posLst) < 5:  # 可以下的空比较少时才搜索
+            if len(posLst) < 5:  # 可以下的空比较少时才搜索 t
                 for pos in posLst:
                     newBoard = board.copy()
                     newBoard.add(peer, pos)
@@ -134,7 +134,7 @@ class Player:
                         choice = d
         else:
             next_pos, actions = Player.getActions(currentRound, board, self.isFirst)
-            if len(actions) > 5 and (next_pos is not None):
+            if len(actions) > 5 and (next_pos is not None):  # t
                 return next_pos
             else:
                 depth = self.getDepth(currentRound, board)
@@ -166,7 +166,7 @@ class Player:
                         choice = d
         else:
             next_pos, actions = Player.getActions(currentRound, board, self.isFirst)
-            if len(actions) > 5 and (next_pos is not None):
+            if len(actions) > 5 and (next_pos is not None):  # t
                 return next_pos
             else:
                 depth = self.getDepth(currentRound, board)
