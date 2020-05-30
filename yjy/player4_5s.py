@@ -11,7 +11,7 @@ class Player:
         self.array = array
         self.maxValue = 2E9
         # self.weight = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 259.0, 519.0, 1039.0, 2079.0, 4159.0]  # t
-        # self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
+        self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
         self.weight = [2.0 ** (n+1) - 1 for n in range(13)]
         self.maxRounds = len(array)
         self.totalTime = 5.0
@@ -84,7 +84,10 @@ class Player:
         if phase == 2 or phase == 3:
             if phase == 3:
                 currentRound += 1
-            for d in [0, 1, 2, 3]:  # 可以改顺序 方便剪枝
+                moves = [2, 0, 1, 3]
+            else:
+                moves = [3, 0, 1, 2]
+            for d in moves:  # 可以改顺序 方便剪枝
                 newBoard = board.copy()
                 if newBoard.move(peer, d):
                     curScore = self._minMaxRecur(newBoard, depth - 1, (phase + 1) % 4, currentRound, alpha, beta)
@@ -128,7 +131,7 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3，分别先手落子、后手落子、先手移动、后手移动
             depth = self.getDepth(currentRound, board)
-            for d in [0, 1, 2, 3]:
+            for d in [3, 0, 1, 2]:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
                     curScore = self._minMaxRecur(newBoard, depth, 3, currentRound)
@@ -160,7 +163,7 @@ class Player:
         if mode == 'direction':
             # phase 0 1 2 3
             depth = self.getDepth(currentRound, board)
-            for d in [0, 1, 2, 3]:
+            for d in [2, 0, 1, 3]:
                 newBoard = board.copy()
                 if newBoard.move(self.isFirst, d):
                     curScore = self._minMaxRecur(newBoard, depth, 0, currentRound + 1)
