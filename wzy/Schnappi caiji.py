@@ -11,8 +11,8 @@ class Player:
         self.array = array
         self.maxValue = 2E9
         # self.weight = [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 259.0, 519.0, 1039.0, 2079.0, 4159.0]  # t
-        self.marginWeight = [500.0, 8.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
-        self.weight = [2.5 ** (n+1) for n in range(13)]
+        self.marginWeight = [500.0, 80.0, 4.0, 0.0, 0.0, 0.0, 0.0]+[0.0]*25
+        self.weight = [2.5 ** n for n in range(13)]
         self.maxRounds = len(array)
         self.totalTime = 5.0
         self.threshold = self.maxRounds * 0.15  # 开启时间控制的阈值
@@ -40,13 +40,13 @@ class Player:
             elif tEsti > 0.0095:
                 depth -= 1
             elif tEsti < 0.005:
-                depth += 6
+                depth += 7
             elif tEsti < 0.006:
-                depth += 5
+                depth += 6
             elif tEsti < 0.007:
-                depth += 4
+                depth += 5
             elif tEsti < 0.009:
-                depth += 3
+                depth += 4
         return depth  # 不超时地最接近5s
 
     def weightSum(self, lst):  # 棋子和作为总分
@@ -57,7 +57,7 @@ class Player:
         myScoreLst = board.getScore(self.isFirst)
         total = self.marginWeight[len(board.getNone(not self.isFirst))] - self.marginWeight[len(board.getNone(self.isFirst))]
         if board.getNext(self.isFirst, currentRound) is None:
-            total = -self.weight[myScoreLst[-1]] / 5.0  # 无空可走的情况酌情扣分
+            total = -self.weight[myScoreLst[-1]] / 3.0  # 无空可走的情况酌情扣分
         else:
             total = 0
         RivalScoreLst = board.getScore(not self.isFirst)
@@ -67,9 +67,9 @@ class Player:
     def scoreMove(self, board):
         myScoreLst = board.getScore(self.isFirst)
         RivalScoreLst = board.getScore(not self.isFirst)
-        total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst) * 50.5  # 更有进攻性
+        total = self.weightSum(myScoreLst) - self.weightSum(RivalScoreLst) * 20.5  # 更有进攻性
         # move的情况空格有额外两分
-        total += (len(board.getNone(self.isFirst)) - len(board.getNone(not self.isFirst))) * 2.0  # t
+        total += (len(board.getNone(self.isFirst)) - len(board.getNone(not self.isFirst))) * 2.5  # t
         return total
 
     def _minMaxRecur(self, board, depth, phase, currentRound, alpha=-(2E9), beta=+(2E9)):
